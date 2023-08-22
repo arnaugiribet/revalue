@@ -2,7 +2,7 @@ library(shiny)
 library(highcharter)
 library(dplyr)
 library(tidyr)
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 options(OutDec = ',', digits=8)
 source('r/utils.R')
 
