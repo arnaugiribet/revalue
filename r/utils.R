@@ -19,12 +19,16 @@ f_hipoteca <- function(cost,entrada){
 
 f_quotaMensual <- function(hipoteca,interes,anys){
   
-  if(hipoteca==0){
-    quotaMensual<-0
+  if(interes==0){
+    quotaMensual<-hipoteca/30/12
   } else{
-    quotaMensual<-hipoteca/((1-(1+interes/12)^(-anys*12))/interes)/12
-  }
-  return(round(quotaMensual,2))
+    if(hipoteca==0){
+      quotaMensual<-0
+      } else{
+        quotaMensual<-hipoteca/((1-(1+interes/12)^(-anys*12))/interes)/12
+      }
+    }
+  return(quotaMensual)
 }
 
 f_hipotecaRestant <- function(hipoteca,anys,interes,quota_mensual){
@@ -57,7 +61,7 @@ f_hipotecaRestant <- function(hipoteca,anys,interes,quota_mensual){
   
   
 f <- function(x) {
-  format(x,big.mark = '.',decimal.mark = ',', nsmall=2)
+  format(roundup2(x,2),big.mark = '.',decimal.mark = ',', nsmall=2)
 }
 
 f_estalvi <- function(ingressos,lloguer,costVida,

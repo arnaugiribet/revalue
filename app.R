@@ -106,7 +106,7 @@ server <- function(input, output) {
     f_quotaMensual(hipoteca(),input$interes,input$anys)
   })
   interesHipoteca<-reactive({
-    round(quotaMensual()*12*input$anys-hipoteca(),2)
+    quotaMensual()*12*input$anys-hipoteca()
   })
 
   output$costTotal<-renderText(paste0("El cost total de la compra és de: ",f(cost())," €"))
