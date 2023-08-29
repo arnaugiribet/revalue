@@ -64,7 +64,23 @@ f <- function(x) {
   format(roundup2(x,2),big.mark = '.',decimal.mark = ',', nsmall=2)
 }
 
-f_estalvi <- function(ingressos,lloguer,costVida,
+
+f_dadesEvolucioHipoteca <- function(anys,quotaMensual,hipotecaRestantAnual){
+
+  #sèries anuals
+  quota_anual_acumulada=roundup2(12*quotaMensual*(0:anys),2)
+
+  dadesEvolucioHipoteca<-data.frame(
+    `Hipoteca Restant` = hipotecaRestantAnual$hipotecaRestantAnual,
+    `Valor Amortitzat Hipoteca` = hipotecaRestantAnual$amortitzacioAcumulada,
+    `Quota Pagada` = quota_anual_acumulada,
+    `Any` = (0:anys), check.names = F)
+  
+  return(dadesEvolucioHipoteca)
+}
+
+
+f_dadesEstalviHipoteca <- function(ingressos,lloguer,costVida,
                       anys,entrada,quotaMensual,hipotecaRestantAnual,
                       upfrontImprovements,manteniment,
                       cancelacioHipoteca,honoraris,incrementValor,
@@ -86,7 +102,7 @@ f_estalvi <- function(ingressos,lloguer,costVida,
   despeses_venda_anual<-preu_anual*(honoraris)+(hipotecaRestantAnual$hipotecaRestantAnual*cancelacioHipoteca)
   valor_habitatge_post_venda<-roundup2(preu_anual-hipotecaRestantAnual$hipotecaRestantAnual-despeses_venda_anual,2)
 
-  dades<-data.frame(`Estalvi Previ`= estalvi_previ_anual,
+  dadesEstalviHipoteca<-data.frame(`Estalvi Previ`= estalvi_previ_anual,
                     `Nou Estalvi` = nou_estalvi_anual,
                     `Hipoteca Restant` = hipotecaRestantAnual$hipotecaRestantAnual,
                     `Valor Amortitzat Hipoteca` = hipotecaRestantAnual$amortitzacioAcumulada,
@@ -95,7 +111,7 @@ f_estalvi <- function(ingressos,lloguer,costVida,
                     `Any` = (0:anys), check.names = F) %>%
     mutate(`Nou Patrimoni Total` = `Valor Liquidat Habitatge (menys despeses de venda)` + `Nou Estalvi`, .before=Any)
   
-  return(dades)
+  return(dadesEstalviHipoteca)
 }
 
 

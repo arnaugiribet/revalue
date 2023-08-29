@@ -118,16 +118,20 @@ server <- function(input, output) {
     f_hipotecaRestant(hipoteca(),input$anys,input$interes,quotaMensual())
   })
   
-  dades<-reactive({
-    f_estalvi(input$ingressos,input$lloguer,input$costVida,
+  dadesEstalviHipoteca<-reactive({
+    f_dadesEstalviHipoteca(input$ingressos,input$lloguer,input$costVida,
               input$anys,input$entrada,quotaMensual(),hipotecaRestantAnual(),
               input$upfrontImprovements,input$manteniment,
               input$cancelacioHipoteca,input$honoraris,input$incrementValor,
               input$preu,cost())
   })
   
+  dadesEvolucioHipoteca<-reactive({
+    f_dadesEvolucioHipoteca(input$anys,quotaMensual(),hipotecaRestantAnual())
+  })
+  
   output$hipotecaPlot <- renderHighchart({
-    dades() %>% 
+    dadesEvolucioHipoteca() %>% 
       select(Any,`Hipoteca Restant`,`Valor Amortitzat Hipoteca`, `Quota Pagada`) %>% 
       pivot_longer(cols      = -Any, # works similar to using select()
                    names_to  = 'Grup', # the name of the column that will have column names as labels
@@ -138,7 +142,7 @@ server <- function(input, output) {
   })
   
   output$estalvisPlot <- renderHighchart({
-    dades() %>% 
+    dadesEstalviHipoteca() %>% 
       select(Any,`Estalvi Previ`,`Nou Estalvi`,`Valor Liquidat Habitatge (menys despeses de venda)`,`Nou Patrimoni Total`) %>% 
       pivot_longer(cols      = -Any, # works similar to using select()
                    names_to  = 'Grup', # the name of the column that will have column names as labels
