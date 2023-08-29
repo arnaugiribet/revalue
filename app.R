@@ -60,7 +60,9 @@ ui <- fluidPage(
           strong(p("Despeses del nou habitatge", style = "font-size:20px")),
           fluidRow(
             column(4,
-                   shinyWidgets::currencyInput("upfrontImprovements", "Inversió inicial", value=0, align='left')),
+                   shinyWidgets::currencyInput("upfrontImprovements", "Inversió per reformes", value=0, align='left')),
+            column(4,
+                   shinyWidgets::currencyInput("valueIncreaseImprovements", "Increment de valor per reformes", value=0, align='left')),
             column(4,
                    shinyWidgets::currencyInput("manteniment", "Manteniment anual", value=1500, align='left'))
           ),
@@ -113,6 +115,11 @@ server <- function(input, output) {
   output$hipoteca<-renderText(paste0("La hipoteca sense interès és de: ",f(hipoteca())," €"))
   output$interesHipoteca<-renderText(paste0("L'interès és de: ",f(interesHipoteca()), " €"))
   output$quotaMensual<-renderText(paste0("Quota mensual resultant: ",f(quotaMensual()), " €"))
+  
+  observeEvent(input$upfrontImprovements, {
+    updateNumericInput(inputId = "valueIncreaseImprovements",
+                       value = input$upfrontImprovements)
+  })
 
   hipotecaRestantAnual<-reactive({
     f_hipotecaRestant(hipoteca(),input$anys,input$interes,quotaMensual())
@@ -121,7 +128,7 @@ server <- function(input, output) {
   dadesEstalviHipoteca<-reactive({
     f_dadesEstalviHipoteca(input$ingressos,input$lloguer,input$costVida,
               input$anys,input$entrada,quotaMensual(),hipotecaRestantAnual(),
-              input$upfrontImprovements,input$manteniment,
+              input$upfrontImprovements,input$valueIncreaseImprovements,input$manteniment,
               input$cancelacioHipoteca,input$honoraris,input$incrementValor,
               input$preu,cost())
   })

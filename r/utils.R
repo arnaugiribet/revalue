@@ -82,7 +82,7 @@ f_dadesEvolucioHipoteca <- function(anys,quotaMensual,hipotecaRestantAnual){
 
 f_dadesEstalviHipoteca <- function(ingressos,lloguer,costVida,
                       anys,entrada,quotaMensual,hipotecaRestantAnual,
-                      upfrontImprovements,manteniment,
+                      upfrontImprovements,valueIncreaseImprovements,manteniment,
                       cancelacioHipoteca,honoraris,incrementValor,
                       preu,cost){
   
@@ -98,7 +98,7 @@ f_dadesEstalviHipoteca <- function(ingressos,lloguer,costVida,
   nou_estalvi_anual<-roundup2(nou_estalvi * (0:anys), 2)
   habitatge_amortitzat_anual<-habitatge_amortitzat_inicial+hipotecaRestantAnual$amortitzacioAcumulada
   quota_anual_acumulada=roundup2(12*quotaMensual*(0:anys),2)
-  preu_anual<-roundup2(preu*(incrementValor+1)**(0:anys))
+  preu_anual<-roundup2((preu+valueIncreaseImprovements)*(incrementValor+1)**(0:anys))
   despeses_venda_anual<-preu_anual*(honoraris)+(hipotecaRestantAnual$hipotecaRestantAnual*cancelacioHipoteca)
   valor_habitatge_post_venda<-roundup2(preu_anual-hipotecaRestantAnual$hipotecaRestantAnual-despeses_venda_anual,2)
 
