@@ -31,6 +31,31 @@ f_quotaMensual <- function(hipoteca,interes,anys){
   return(quotaMensual)
 }
 
+f_estalviPrevi <- function(ingressos,lloguer,costVida){
+  estalviPrevi<-ingressos-12*lloguer-costVida
+  return(estalviPrevi)
+}
+
+f_estalviNou <- function(ingressos,quotaMensual,costVida,manteniment){
+  estalviNou<-ingressos-12*quotaMensual-manteniment-costVida
+  return(estalviNou)
+}
+
+f_anysGuanyEconomic <- function(estalviPreviAnual,nouPatrimoniAnual){
+  
+  dif<-estalviPreviAnual-nouPatrimoniAnual
+  negs<-dif<0
+  if(sum(negs)>0){
+    anysGuanyEconomic<-which(dif<0)[1]-1 #recordar que les series comencen a l'any 0
+    anysGuanyEconomic<-f(anysGuanyEconomic,dec=0)
+  } else {
+    anysGuanyEconomic<- "No hi haurà benefici econòmic"
+  }
+
+  return(anysGuanyEconomic)
+}
+
+
 f_hipotecaRestant <- function(hipoteca,anys,interes,quota_mensual){
   
   #mensual (es necessita per l'anual)
@@ -60,8 +85,8 @@ f_hipotecaRestant <- function(hipoteca,anys,interes,quota_mensual){
 }
   
   
-f <- function(x) {
-  format(roundup2(x,2),big.mark = '.',decimal.mark = ',', nsmall=2)
+f <- function(x,dec=2) {
+  format(roundup2(x,dec),big.mark = '.',decimal.mark = ',', nsmall=dec)
 }
 
 
@@ -80,22 +105,18 @@ f_dadesEvolucioHipoteca <- function(anys,quotaMensual,hipotecaRestantAnual){
 }
 
 
-f_dadesEstalviHipoteca <- function(ingressos,lloguer,costVida,
+f_dadesEstalviHipoteca <- function(estalviPrevi,estalviNou,
                       anys,entrada,quotaMensual,hipotecaRestantAnual,
-                      upfrontImprovements,valueIncreaseImprovements,manteniment,
+                      upfrontImprovements,valueIncreaseImprovements,
                       cancelacioHipoteca,honoraris,incrementValor,
                       preu,cost){
   
   #valors inicial
   habitatge_amortitzat_inicial<-entrada-(cost-preu)
-  
-  #valors constants al temps
-  estalvi_previ<-ingressos-12*lloguer-costVida
-  nou_estalvi<-ingressos-12*quotaMensual-manteniment-costVida
-  
+
   #sèries anuals
-  estalvi_previ_anual<-roundup2(entrada+upfrontImprovements+estalvi_previ*(0:anys),2)
-  nou_estalvi_anual<-roundup2(nou_estalvi * (0:anys), 2)
+  estalvi_previ_anual<-roundup2(entrada+upfrontImprovements+estalviPrevi*(0:anys),2)
+  nou_estalvi_anual<-roundup2(estalviNou * (0:anys), 2)
   habitatge_amortitzat_anual<-habitatge_amortitzat_inicial+hipotecaRestantAnual$amortitzacioAcumulada
   quota_anual_acumulada=roundup2(12*quotaMensual*(0:anys),2)
   preu_anual<-roundup2((preu+valueIncreaseImprovements)*(incrementValor+1)**(0:anys))
@@ -109,7 +130,7 @@ f_dadesEstalviHipoteca <- function(ingressos,lloguer,costVida,
                     `Quota Pagada` = quota_anual_acumulada,
                     `Valor Liquidat Habitatge (menys despeses de venda)`=valor_habitatge_post_venda,
                     `Any` = (0:anys), check.names = F) %>%
-    mutate(`Nou Patrimoni Total` = `Valor Liquidat Habitatge (menys despeses de venda)` + `Nou Estalvi`, .before=Any)
+    mutate(`Nou Patrimoni Total` = roundup2(`Valor Liquidat Habitatge (menys despeses de venda)` + `Nou Estalvi`,2), .before=Any)
   
   return(dadesEstalviHipoteca)
 }
