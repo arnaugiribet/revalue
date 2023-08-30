@@ -109,34 +109,66 @@ f_dadesEstalviHipoteca <- function(estalviPrevi,estalviNou,
                       anys,entrada,quotaMensual,hipotecaRestantAnual,
                       upfrontImprovements,valueIncreaseImprovements,
                       cancelacioHipoteca,honoraris,incrementValor,
-                      preu,cost){
+                      preu,cost,impostosVenda){
   
   #valors inicial
   habitatge_amortitzat_inicial<-entrada-(cost-preu)
 
+  #booleans d'impostos
+  irpfBoolean<-as.numeric('irpf' %in% impostosVenda)
+  plusvaluaBoolean<-as.numeric('plusvaluaMunicipal' %in% impostosVenda)
+  ibiBoolean<-as.numeric('ibi' %in% impostosVenda)
+  
   #sèries anuals
   estalvi_previ_anual<-roundup2(entrada+upfrontImprovements+estalviPrevi*(0:anys),2)
   nou_estalvi_anual<-roundup2(estalviNou * (0:anys), 2)
   habitatge_amortitzat_anual<-habitatge_amortitzat_inicial+hipotecaRestantAnual$amortitzacioAcumulada
   quota_anual_acumulada=roundup2(12*quotaMensual*(0:anys),2)
   preu_anual<-roundup2((preu+valueIncreaseImprovements)*(incrementValor+1)**(0:anys))
-  despeses_venda_anual<-preu_anual*(honoraris)+(hipotecaRestantAnual$hipotecaRestantAnual*cancelacioHipoteca)
+  impostIrpf<-irpfBoolean*f_calculaQuota(x=(preu_anual-preu),limSup=c(6,50,200,300,Inf)*1000,valor=c(0.19,0.21,0.23,0.27,0.28))
+  despeses_venda_anual<-preu_anual*(honoraris)+(hipotecaRestantAnual$hipotecaRestantAnual*cancelacioHipoteca)+impostIrpf
   valor_habitatge_post_venda<-roundup2(preu_anual-hipotecaRestantAnual$hipotecaRestantAnual-despeses_venda_anual,2)
 
-  dadesEstalviHipoteca<-data.frame(`Estalvi Previ`= estalvi_previ_anual,
-                    `Nou Estalvi` = nou_estalvi_anual,
-                    `Hipoteca Restant` = hipotecaRestantAnual$hipotecaRestantAnual,
-                    `Valor Amortitzat Hipoteca` = hipotecaRestantAnual$amortitzacioAcumulada,
-                    `Quota Pagada` = quota_anual_acumulada,
-                    `Valor Liquidat Habitatge (menys despeses de venda)`=valor_habitatge_post_venda,
-                    `Any` = (0:anys), check.names = F) %>%
-    mutate(`Nou Patrimoni Total` = roundup2(`Valor Liquidat Habitatge (menys despeses de venda)` + `Nou Estalvi`,2), .before=Any)
+  dadesEstalviHipoteca<-data.frame(
+    `Estalvi Previ`= estalvi_previ_anual,
+    `Nou Estalvi` = nou_estalvi_anual,
+    `Hipoteca Restant` = hipotecaRestantAnual$hipotecaRestantAnual,
+    `Valor Amortitzat Hipoteca` = hipotecaRestantAnual$amortitzacioAcumulada,
+    `Quota Pagada` = quota_anual_acumulada,
+    `Valor Liquidat Habitatge (menys despeses de venda)` = valor_habitatge_post_venda,
+    `Quantitat a pagar d'IRPF` = impostIrpf,
+    `Any` =  (0:anys), check.names = F) %>%
+    mutate(
+      `Nou Patrimoni Total` = roundup2(`Valor Liquidat Habitatge (menys despeses de venda)` + `Nou Estalvi`,2), .before=Any
+      )
   
   return(dadesEstalviHipoteca)
 }
 
-
-
+f_calculaQuota<-function(x,limSup,valor){
+  #x: valor sobre el qual calcular la quota
+  #limSup: límits superior dels trams - normalment acaba amb Infinit
+  #valor: percentatge que s'aplica a cada tram
+  
+  qi<-rep(0,length(x))
+  for(i in 1:length(valor)){
+    
+    limSup_ant<-0
+    if(i>1){
+      limSup_ant<-limSup[i-1]
+    }
+    
+    qi_i<-fifelse(x>=limSup[i], 
+                  (limSup[i]-limSup_ant)*valor[i], #si queda per sobre del tram actual
+                  fifelse(x>limSup_ant, 
+                          (x-limSup_ant)*valor[i], #si està al tram actual
+                          0)) #trams inferiors als que evaluem
+    
+    qi<-qi+qi_i
+  }
+  
+  return(qi)
+}
 
 
 

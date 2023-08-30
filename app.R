@@ -2,6 +2,7 @@ library(shiny)
 library(highcharter)
 library(dplyr)
 library(tidyr)
+library(data.table)
 #setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 options(OutDec = ',', digits=8)
 source('r/utils.R')
@@ -156,7 +157,7 @@ server <- function(input, output) {
   output$estalviNou<-renderText(paste0("El nou estalvi (sense lloguer) amb hipoteca seria de: ",f(estalviNou()), " €"))
   output$tempsNecessariRendible<-renderText(paste0("Anys per a que la venda de l'habitatge suposi un guany econòmic: ",anysGuanyEconomic()))
   output$textAclariments<-renderText(paste0("Per calcular el valor liquidat net de l'habitatge es resta al valor de l'immoble en el seu 
-                                     moment de venda les despeses associades: cancel·lació d'hipoteca i honoraris. El nou patrimoni és la suma dels nous estalvis i el líquid net obtingut de la venda de l'habitatge."))
+                                     moment de venda les despeses associades: cancel·lació d'hipoteca, honoraris i impostos. El nou patrimoni és la suma dels nous estalvis i el líquid net obtingut de la venda de l'habitatge."))
   output$textAclarimentsPatrimoniAmortitzat<-renderText(paste0("Dels ",f(input$entrada)," € d'entrada ",f(costDespeses()+input$itp*input$preu),
                                                                " es destinen a ITP+despeses i ",f(input$entrada-costDespeses()-input$itp*input$preu),
                                                                " és el valor liquidat inicial de l'habitatge."))
@@ -174,7 +175,7 @@ server <- function(input, output) {
               input$anys,input$entrada,quotaMensual(),hipotecaRestantAnual(),
               input$upfrontImprovements,input$valueIncreaseImprovements,
               input$cancelacioHipoteca,input$honoraris,input$incrementValor,
-              input$preu,cost())
+              input$preu,cost(),input$impostosVenda)
   })
  
   
@@ -192,7 +193,8 @@ server <- function(input, output) {
   
   output$estalvisPlot <- renderHighchart({
     dadesEstalviHipoteca() %>% 
-      select(Any,`Estalvi Previ`,`Nou Estalvi`,`Valor Liquidat Habitatge (menys despeses de venda)`,`Nou Patrimoni Total`) %>% 
+      select(Any,`Estalvi Previ`,`Nou Estalvi`,`Valor Liquidat Habitatge (menys despeses de venda)`,
+             `Nou Patrimoni Total`,`Quantitat a pagar d'IRPF`) %>% 
       pivot_longer(cols      = -Any, # works similar to using select()
                    names_to  = 'Grup', # the name of the column that will have column names as labels
                    values_to = 'Quantitat'  # the name of the column for the values
