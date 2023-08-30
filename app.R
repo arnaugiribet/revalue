@@ -79,7 +79,12 @@ ui <- fluidPage(
           fluidRow(
             column(5,
                    shinyWidgets::currencyInput("incrementValor", "Increment anual de valor de l'habitatge", 
-                                               value = 0.02, format = "percentageEU2dec", align='left'))
+                                               value = 0.02, format = "percentageEU2dec", align='left')),
+            column(5,
+                   checkboxGroupInput('impostosVenda','Impostos associats a la venda',
+                                      choiceNames=list('IRPF','Plusvàlua Municipal','IBI'),
+                                      choiceValues=list('irpf','plusvaluaMunicipal','ibi'),
+                                      selected=list('irpf','plusvaluaMunicipal','ibi')))
           )
         ),
         
